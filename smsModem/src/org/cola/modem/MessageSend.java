@@ -24,12 +24,12 @@ public class MessageSend extends Thread {
     private synchronized void doIt() throws Exception {
         try {
             // Service.getInstance().startService();
-            String sql = "Select SYSNO, CELLNUMBER, SMSCONTENT from SmsCat_SMS where Status=0 and rownum < 10 order by Priority desc";
+            String sql = "Select SYSNO, CELLNUMBER, SMSCONTENT, retrycount from SmsCat_SMS where Status=0 and createtime >= trunc(sysdate) - 1 and rownum < 10 order by Priority desc";
             DBResult result = dbUtil.executeQuery(sql, 60000);
             forSendMsgCnt = result.iRowsCnt;
             for (int i = 0; i < result.iRowsCnt; ++i) {
                 new MessageSendThread(result.aaRes[i][0], result.aaRes[i][1],
-                        result.aaRes[i][2]).start();
+                        result.aaRes[i][2], Integer.parseInt(result.aaRes[i][3])).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
